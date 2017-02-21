@@ -1,0 +1,4 @@
+rootProject.name = 'interothcloud'
+include 'modules:mqtt-frontend'
+findProject(':modules:mqtt-frontend')?.name = 'mqtt-frontend'
+
