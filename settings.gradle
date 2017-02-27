@@ -2,3 +2,11 @@ rootProject.name = 'interothcloud'
 include 'modules:mqtt-frontend'
 findProject(':modules:mqtt-frontend')?.name = 'mqtt-frontend'
 
+include 'modules:rest-frontend'
+findProject(':modules:rest-frontend')?.name = 'rest-frontend'
+
+include 'modules:iot-core'
+findProject(':modules:iot-core')?.name = 'iot-core'
+include 'modules:iot-core-api'
+findProject(':modules:iot-core-api')?.name = 'iot-core-api'
+

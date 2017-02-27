@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "brimzi.interothcloud.iotcoreapi";
+option java_outer_classname = "TelemetryProto";
+option objc_class_prefix = "TMA";
+
+package iotcoreapi;
+
+service TelemetryApi {
+
+    rpc save (TelemetryWrite) returns (Ok) {}
+
+    rpc query (TelemetryQuery) returns (TelemetryAggregateResult){}
+}
+
+message TelemetryWrite {
+    string id = 1;
+    map<int64, int64> reading = 2; //TODO consider repeated for performance improvement?
+}
+
+message TelemetryQuery {
+    repeated string id = 1;
+    int64 start = 2; //epoch
+    int64 end = 3; //epoch
+    string func = 4;
+}
+
+message TelemetryAggregateResult {
+    repeated Aggregate aggregates = 1;
+}
+
+message Aggregate{
+  string id = 1;
+  int64 start = 2;
+  int64 end = 3;
+  int64 value = 4;
+}
+
+message Ok {}

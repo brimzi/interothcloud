@@ -1,5 +1,5 @@
 
 
 dependencies {
-
+    compile project(':modules:iot-core')
 }

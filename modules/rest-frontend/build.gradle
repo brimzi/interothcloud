@@ -1,6 +1,6 @@
 
-ext.dropwizard_version = '1.0.5'
+ext.dropwizard_version = '1.0.6'
 
 dependencies {
-
+    compile "io.dropwizard:dropwizard-core:$dropwizard_version"
 }
