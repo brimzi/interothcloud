@@ -1,6 +1,7 @@
 package brimzi.interithcloud.iotcore;
 
 import brimzi.interithcloud.iotcore.backend.DataStore;
+import brimzi.interithcloud.iotcore.backend.WriteData;
 import brimzi.interithcloud.iotcore.backend.QueryResult;
 import brimzi.interothcloud.iotcoreapi.*;
 import com.google.common.base.Strings;
@@ -11,10 +12,9 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 public class TelemetryServer {
     private static Logger LOGGER = LoggerFactory.getLogger(TelemetryServer.class);
@@ -24,7 +24,7 @@ public class TelemetryServer {
     public TelemetryServer(int port) {
         this(port, new DataStore() {
             @Override
-            public void save(TelemetryWrite request) throws Exception {
+            public void save(WriteData data) throws Exception {
 
             }
 
@@ -34,9 +34,8 @@ public class TelemetryServer {
             }
 
             @Override
-            public List<QueryResult> queryForAll(List<String> idList, String func, long start, long
-                    end) {
-                return new ArrayList<>();
+            public <T> List<T> queryForAll(List<String> idList, String func, long start, long end, Function<QueryResult, T> converter) throws Exception {
+                return null;
             }
         });
     }
@@ -83,7 +82,7 @@ public class TelemetryServer {
     }
 
     private static class TelemetryService extends TelemetryApiGrpc.TelemetryApiImplBase {
-
+        private static Logger LOGGER = LoggerFactory.getLogger(TelemetryService.class);
         final private DataStore backendStore;
 
         TelemetryService(DataStore backendStore) {
@@ -98,10 +97,11 @@ public class TelemetryServer {
             }
 
             try {
-                backendStore.save(request);
+                backendStore.save(convertToWriteData(request));
                 responseObserver.onNext(Ok.newBuilder().build());
                 responseObserver.onCompleted();
             } catch (Exception e) {
+                LOGGER.error("Error occurred when saving Telemetry data",e);
                 responseObserver.onError(new StatusRuntimeException(Status.INTERNAL));
             }
         }
@@ -110,26 +110,39 @@ public class TelemetryServer {
         public void query(TelemetryQuery req, StreamObserver<TelemetryAggregateResult> responseObserver) {
 
             try {
-                List<QueryResult> res = backendStore.queryForAll(req.getIdList(), req.getFunc(),
-                        req.getStart(), req.getEnd());
+                List<Aggregate> res;
+                if (req.getIdCount() == 1) {
+                    res = new ArrayList<>();
+                    res.add(convertToAggregate(backendStore.query(req.getId(0), req.getFunc(),
+                            req.getStart(), req.getEnd())));
+                } else {
+                    res = backendStore.queryForAll(req.getIdList(), req.getFunc(), req.getStart(),
+                            req.getEnd(),TelemetryService::convertToAggregate);
+                }
 
-                TelemetryAggregateResult result = convertToTelemetryAggregate(res);
+                TelemetryAggregateResult result = TelemetryAggregateResult.newBuilder()
+                        .addAllAggregates(res).build();
+
                 responseObserver.onNext(result);
                 responseObserver.onCompleted();
             } catch (Exception e) {
+                LOGGER.error("Error occurred when querying data",e);
                 responseObserver.onError(new StatusRuntimeException(Status.INTERNAL));
             }
         }
 
-        private TelemetryAggregateResult convertToTelemetryAggregate(List<QueryResult> res) {
+        private WriteData convertToWriteData(TelemetryWrite req) {
+            WriteData data = new WriteData();
+            data.setId(req.getId());
+            data.setValues(req.getReadingMap());
+            return data;
+        }
 
-            return TelemetryAggregateResult.newBuilder().addAllAggregates(res.stream().map(
-                    r -> Aggregate.newBuilder().setId(r.getId())
-                            .setStart(r.getStart())
-                            .setEnd(r.getEnd())
-                            .setValue(r.getValue())
-                            .build())
-                    .collect(Collectors.toList()))
+        private static Aggregate convertToAggregate(QueryResult res){
+            return Aggregate.newBuilder().setId(res.getId())
+                    .setStart(res.getStart())
+                    .setEnd(res.getEnd())
+                    .setValue(res.getValue())
                     .build();
         }
     }

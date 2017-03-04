@@ -16,7 +16,7 @@ service TelemetryApi {
 
 message TelemetryWrite {
     string id = 1;
-    map<int64, int64> reading = 2; //TODO consider repeated for performance improvement?
+    map<int64, double> reading = 2; //TODO consider repeated for performance improvement?
 }
 
 message TelemetryQuery {
@@ -34,7 +34,7 @@ message Aggregate{
   string id = 1;
   int64 start = 2;
   int64 end = 3;
-  int64 value = 4;
+  double value = 4;
 }
 
 message Ok {}

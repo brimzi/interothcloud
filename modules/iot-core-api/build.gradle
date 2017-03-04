@@ -9,12 +9,14 @@ buildscript {
     }
 }
 apply plugin: 'com.google.protobuf'
-def grpcVersion = '1.0.3'
+ext.grpcVersion = '1.0.3'
+
 
 dependencies {
     compile "io.grpc:grpc-netty:${grpcVersion}"
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
+
 }
 
 protobuf {

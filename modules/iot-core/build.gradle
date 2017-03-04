@@ -1,4 +1,13 @@
 
+plugins {
+    id "net.ltgt.apt" version "0.5"
+}
+ext.cassandra_version = '3.1.4'
+ext.dagger_version = '2.9'
 dependencies {
     compile project(':modules:iot-core-api')
+    compile "com.datastax.cassandra:cassandra-driver-core:$cassandra_version"
+    compile "com.datastax.cassandra:cassandra-driver-mapping:$cassandra_version"
+    compile "com.google.dagger:dagger:$dagger_version"
+    apt "com.google.dagger:dagger-compiler:$dagger_version"
 }

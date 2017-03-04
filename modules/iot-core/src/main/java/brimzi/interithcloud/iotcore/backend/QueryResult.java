@@ -1,13 +1,11 @@
 package brimzi.interithcloud.iotcore.backend;
 
-/**
- * Created by brimzy on 02/03/2017.
- */
+
 public class QueryResult {
     private String id;
     private long start;
     private long end;
-    private long value;
+    private double value;
 
     public String getId() {
         return id;
@@ -21,7 +19,7 @@ public class QueryResult {
         return end;
     }
 
-    public long getValue() {
+    public double getValue() {
         return value;
     }
 
@@ -37,7 +35,7 @@ public class QueryResult {
         this.end = end;
     }
 
-    public void setValue(long value) {
+    public void setValue(double value) {
         this.value = value;
     }
 }
